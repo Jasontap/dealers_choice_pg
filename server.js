@@ -1,50 +1,120 @@
-const Sequelize = require('sequelize');
-const faker = require('faker');
-const { STRING, TEXT } = Sequelize;
-const db = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost/acme_users_db');
+const { db, syncAndSeed, models: { User } } = require('./db');
+const express = require('express');
+const path = require('path');
 
-const User = db.define('User', {  //define will start to run sql commands such as creating a table and some table detials
-  email: {
-    type: STRING,
-    allowNull: false,
-    validate: {
-      isEmail: true
-    }
-  },
-  bio: {
-    type: TEXT
+const app = express();
+
+app.use(express.urlencoded({ extended: false }));
+app.use(require('method-override')('_method'));
+
+app.get('/styles.css', (req, res)=> res.sendFile(path.join(__dirname, 'styles.css')));
+
+app.get('/', (req, res)=> res.redirect('/users'));
+
+app.delete('/users/:id', async(req, res, next)=> {
+  try {
+    const user = await User.findByPk(req.params.id);
+    await user.destroy();
+    res.redirect('/users');
   }
-}); 
-
-User.beforeSave( user => {
-  if(!user.bio) {
-    user.bio = `${user.email} BIO is ${faker.lorem.paragraphs(3)}`;
+  catch(ex) {
+    next(ex);
   }
 })
 
-const syncAndSeed = async()=> {
-  await db.sync({ force: true });
-  await User.create({ email: 'moe@gmail.com', bio: 'This is bio for Moe' });
-  await User.create({ email: 'lucy@gmail.com' });
-  await User.create({ email: 'athyl@gmail.com' });
-}
+app.post('/users', async(req, res, next)=> {
+  try{
+    const user = await User.create(req.body);
+    res.redirect(`/users/${ user.id }`);
+  }
+  catch(ex) {
+    next(ex);
+  }
+})
+
+app.get('/users', async(req, res, next)=> {
+  try{
+    const users = await User.findAll();
+    res.send(`
+      <html>
+        <head>
+          <link rel='stylesheet' href='/styles.css' />
+        </head>
+        <body>
+          <h1>Users ${ users.length }</h1>
+          <form method='POST' id='user-form'>
+            <input name='email' placeHolder='enter email' />
+            <textarea name='bio'></textarea>
+            <button>Create</button>
+          </form>
+          <ul>
+            ${ users.map( user => `
+            <li>
+              <a href='/users/${ user.id }'>
+                ${ user.email }
+              </a>
+            </li>
+            `).join('')}
+        </body>
+      </html>
+    `);
+  }
+  catch(ex) {
+    next(ex);
+  }
+})
+
+app.get('/users/:id', async(req, res, next)=> {
+  try{
+    const user = await User.findByPk(req.params.id);
+    const users = await User.findAll();
+    res.send(`
+      <html>
+        <head>
+          <link rel='stylesheet' href='/styles.css' />
+        </head>
+        <body>
+          <h1>User ${ req.params.id }</h1>
+            <a href='/users'>
+              ${ user.email }
+            </a>
+            <p>
+              ${ user.bio }
+            </p>
+            <form method='POST' action='/users/${ user.id }?_method=DELETE'>
+              <button>x</button>
+            </form>
+        </body>
+      </html>
+    `);
+  }
+  catch(ex) {
+    next(ex);
+  }
+})
 
 const init = async()=> {
   try{
     await db.authenticate();
-    await syncAndSeed();
-    //console.log(await User.findAll());
+    if(process.env.SYNC) {
+      await syncAndSeed();
+    }
+    const port = process.env.PORT || 3000;
+    app.listen(port, ()=> console.log(`listening on port ${port}`));
   }
   catch(ex) {
     console.log(ex);
   }
 }
 
+
 init();
 
 
 
 /*
+
+//THIS IS THE POSTGRES METHOD WITHOUT USING SEQUELIZE!!
 const { Client } = require('pg');
 const client = new Client(process.env.DATABASE_URL || 'postgres://localhost/acme_users_db');
 
