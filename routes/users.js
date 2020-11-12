@@ -1,7 +1,7 @@
 const { models: { User } } = require('../db');
 const app = require('express').Router();
 
-module.exports = app;
+
 
 app.delete('/:id', async(req, res, next)=> {
   try {
@@ -85,3 +85,4 @@ app.get('/:id', async(req, res, next)=> {
   }
 })
 
+module.exports = app;
