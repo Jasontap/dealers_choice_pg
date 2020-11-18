@@ -1,11 +1,11 @@
 {
-  "name": "acme_users_sequalize",
+  "name": "dealers_choice_pg",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev:sync": "SYNC=true npm run start:dev"
+    "start:dev": "nodemon server"
   },
   "keywords": [],
   "author": "",

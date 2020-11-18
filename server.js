@@ -1,5 +1,5 @@
 // importing modules from index.js file
-const { db, syncAndSeed, models: { User } } = require('./db');
+const { db, syncAndSeed, models: { Coffee } } = require('./db');
 // importing express
 const express = require('express');
 // importing path
@@ -17,15 +17,16 @@ app.use(require('method-override')('_method'));
 app.get('/styles.css', (req, res)=> res.sendFile(path.join(__dirname, 'styles.css')));
 
 // any request for the '/' directory will be redirected to '/users' directory
-app.get('/', (req, res)=> res.redirect('/users'));
+app.get('/', (req, res)=> res.redirect('/coffee'));
 
 // when request comes from '/users', the users.js file is imported
-app.use('/users', require('./routes/users'));
+app.use('/coffee', require('./routes/coffee'));
 
 
 const init = async()=> {
   try{
     await db.authenticate(); // authenticate function tests if connection to database is OK
+    console.log('connected to db!')
     if(process.env.SYNC) {
       await syncAndSeed();
     }

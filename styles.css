@@ -1,13 +1,38 @@
 body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   padding: 2rem;
+  background-color: rgb(202, 171, 145);
 }
 
 #user-form {
   display: flex;
   flex-direction: column;
+  margin: 1rem;
 }
 
-#user-form > * {
-  margin: 1rem;
+
+form > p {
+  margin: 1rem 0 0 0;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 400px;
+}
+
+.details > * {
+  margin: 1.5rem 0 0 .5rem;
+}
+
+#deletion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid black;
+  background-color: rgb(202, 202, 202);
 }
